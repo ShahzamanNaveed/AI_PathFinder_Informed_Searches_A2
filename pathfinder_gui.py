@@ -6,38 +6,36 @@ SCREEN_W = min(1400, _info.current_w  - 20)
 SCREEN_H = min(860,  _info.current_h  - 80)
 
 # ── Colours ──────────────────────────────────
-BG         = (13,  15,  23)   # near-black blue base
-PANEL_BG   = (19,  22,  34)   # panel card
-PANEL_DARK = (14,  17,  27)   # sunken element bg
-BORDER     = (38,  44,  68)   # subtle divider
+BG         = (13,  15,  23)
+PANEL_BG   = (19,  22,  34)
+PANEL_DARK = (14,  17,  27)
+BORDER     = (38,  44,  68)
 
 CELL_EMPTY = (20,  25,  42)
-CELL_WALL  = (42,  46,  62)   # slate wall
-CELL_START = (32, 160, 110)   # muted teal
-CELL_GOAL  = (180,  58,  62)  # muted red
-CELL_FRONT = (180, 148,  40)  # muted amber
-CELL_VISIT = (45,  95, 170)   # muted blue
-CELL_PATH  = (38, 190, 120)   # muted green
+CELL_WALL  = (42,  46,  62)
+CELL_START = (32, 160, 110)
+CELL_GOAL  = (180,  58,  62)
+CELL_FRONT = (180, 148,  40)
+CELL_VISIT = (45,  95, 170)
+CELL_PATH  = (38, 190, 120)
+CELL_AGENT = (220, 240, 255)  # bright white-cyan for agent position
 CELL_GRID  = (45,  52,  80)
 
-# Accent palette — used only for borders/text, never as button fill
-A_TEAL   = (60,  200, 160)   # primary accent
-A_BLUE   = (80,  140, 220)   # info
-A_AMBER  = (210, 165,  55)   # warning / density
-A_RED    = (200,  75,  80)   # danger
-A_PURPLE = (130,  90, 210)   # generate
-A_GREEN  = (60,  185, 110)   # start/go
+A_TEAL   = (60,  200, 160)
+A_BLUE   = (80,  140, 220)
+A_AMBER  = (210, 165,  55)
+A_RED    = (200,  75,  80)
+A_PURPLE = (130,  90, 210)
+A_GREEN  = (60,  185, 110)
 
-WHITE    = (205, 215, 230)   # soft white text
-GREY     = (90,  105, 135)   # secondary text
-DIM      = (50,   58,  84)   # disabled / hint
+WHITE    = (205, 215, 230)
+GREY     = (90,  105, 135)
+DIM      = (50,   58,  84)
 
-# Button fill colours — all dark, differentiated by hue, not brightness
-BTN_BASE    = (24,  28,  44)  # default resting fill
-BTN_HOVER   = (30,  36,  56)  # hover fill
-BTN_ACTIVE  = (28,  34,  52)  # active/pressed fill
+BTN_BASE    = (24,  28,  44)
+BTN_HOVER   = (30,  36,  56)
+BTN_ACTIVE  = (28,  34,  52)
 
-# ── Layout ───────────────────────────────────
 PANEL_W         = 300
 GRID_AREA_W     = SCREEN_W - PANEL_W
 GRID_AREA_H     = SCREEN_H
@@ -55,7 +53,6 @@ def rrect(surf, color, rect, r=8, bw=0, bc=None):
         pygame.draw.rect(surf, bc, rect, bw, border_radius=r)
 
 
-# ── Button ───────────────────────────────────
 class Button:
     def __init__(self, x, y, w, h, label, color=A_TEAL,
                  toggle=False, active=False, always_lit=False, font=None):
@@ -69,23 +66,18 @@ class Button:
         self.font       = font
 
     def draw(self, surf):
-        # All buttons use dark fills — accent shows only as border + label colour
         if self.hovered:
             fill, border_w = BTN_HOVER, 1
         elif self.active and self.toggle:
             fill, border_w = BTN_ACTIVE, 2
         else:
             fill, border_w = BTN_BASE, 1
-
-        accent = self.color  # accent used for border & text only
+        accent = self.color
         border_col = accent if (self.hovered or self.active) else BORDER
         rrect(surf, fill, self.rect, r=6, bw=border_w, bc=border_col)
-
-        # left accent bar for active toggle buttons
         if self.active and self.toggle:
             bar = pygame.Rect(self.rect.x+1, self.rect.y+4, 3, self.rect.h-8)
             pygame.draw.rect(surf, accent, bar, border_radius=2)
-
         if self.font:
             tc = WHITE if not (self.hovered or self.active) else self.color
             t = self.font.render(self.label, True, tc)
@@ -101,7 +93,6 @@ class Button:
         return False
 
 
-# ── Dropdown ─────────────────────────────────
 class Dropdown:
     def __init__(self, x, y, w, h, options, label="", color=A_TEAL, font=None):
         self.rect    = pygame.Rect(x, y, w, h)
@@ -121,10 +112,11 @@ class Dropdown:
 
     def draw(self, surf):
         if self.label and self.font:
-            surf.blit(self.font.render(self.label, True, GREY), (self.rect.x, self.rect.y-16))
-        rrect(surf, BTN_BASE, self.rect, r=6, bw=1, bc=self.color if self.open else BORDER)
+            surf.blit(self.font.render(self.label, True, WHITE), (self.rect.x, self.rect.y-16))
+        # Darker, more visible background
+        rrect(surf, (30, 36, 56), self.rect, r=6, bw=2, bc=self.color if self.open else self.color)
         if self.font:
-            t = self.font.render(self.options[self.selected], True, WHITE if self.open else GREY)
+            t = self.font.render(self.options[self.selected], True, WHITE)
             surf.blit(t, t.get_rect(midleft=(self.rect.x+12, self.rect.centery)))
         ax, ay = self.rect.right-18, self.rect.centery
         pts = [(ax,ay+4),(ax+8,ay+4),(ax+4,ay-4)] if self.open else [(ax,ay-4),(ax+8,ay-4),(ax+4,ay+4)]
@@ -132,8 +124,8 @@ class Dropdown:
         if self.open:
             for i, opt in enumerate(self.options):
                 ir = self._item_rect(i)
-                bg = BTN_HOVER if i==self.hovered else BTN_BASE
-                rrect(surf, bg, ir, r=4, bw=1, bc=self.color if i==self.selected else BORDER)
+                bg = (40, 50, 75) if i==self.hovered else (30, 36, 56)
+                rrect(surf, bg, ir, r=4, bw=1, bc=self.color if i==self.selected else self.color)
                 if self.font:
                     t = self.font.render(opt, True, self.color if i==self.selected else WHITE)
                     surf.blit(t, t.get_rect(midleft=(ir.x+12, ir.centery)))
@@ -155,7 +147,6 @@ class Dropdown:
     def close(self): self.open = False
 
 
-# ── Number Input ─────────────────────────────
 class NumberInput:
     def __init__(self, x, y, w, h, label, val=10, mn=5, mx=60, color=A_TEAL, font=None):
         self.rect   = pygame.Rect(x, y, w, h)
@@ -205,7 +196,6 @@ class NumberInput:
         self.text = str(self.val)
 
 
-# ── Slider ───────────────────────────────────
 class Slider:
     def __init__(self, x, y, w, label, mn=0, mx=100, val=30, color=A_TEAL, font=None):
         self.x, self.y, self.w = x, y, w
@@ -241,9 +231,8 @@ class Slider:
                 (event.pos[0]-self.track.x)/self.track.w)) * (self.mx-self.mn))
 
 
-# ── Grid ─────────────────────────────────────
 class Grid:
-    EMPTY=0; WALL=1; START=2; GOAL=3; FRONT=4; VISIT=5; PATH=6
+    EMPTY=0; WALL=1; START=2; GOAL=3; FRONT=4; VISIT=5; PATH=6; AGENT=7
 
     def __init__(self, rows, cols):
         self.rows, self.cols = rows, cols
@@ -260,7 +249,7 @@ class Grid:
     def clear_path(self):
         for r in range(self.rows):
             for c in range(self.cols):
-                if self.cells[r][c] in (self.FRONT, self.VISIT, self.PATH):
+                if self.cells[r][c] in (self.FRONT, self.VISIT, self.PATH, self.AGENT):
                     self.cells[r][c] = self.EMPTY
 
     def generate_random(self, density):
@@ -270,7 +259,6 @@ class Grid:
                     self.cells[r][c] = self.WALL if random.random() < density else self.EMPTY
 
 
-# ── Metrics ──────────────────────────────────
 class MetricsBox:
     def __init__(self, x, y, w, font):
         self.x, self.y, self.w = x, y, w
@@ -285,7 +273,7 @@ class MetricsBox:
         rrect(surf, PANEL_DARK, box, r=10, bw=1, bc=BORDER)
         t = self.font.render("─── METRICS ───", True, GREY)
         surf.blit(t, t.get_rect(centerx=box.centerx, y=box.y+10))
-        sc = {"IDLE":GREY,"RUNNING":A_AMBER,"FOUND":A_GREEN,"NO PATH":A_RED}.get(self.status, WHITE)
+        sc = {"IDLE":GREY,"RUNNING":A_AMBER,"MOVING":A_TEAL,"FOUND":A_GREEN,"NO PATH":A_RED}.get(self.status, WHITE)
         st = self.font.render(self.status, True, sc)
         surf.blit(st, st.get_rect(centerx=box.centerx, y=box.y+32))
         for i, (lbl, val, col) in enumerate([
@@ -299,10 +287,9 @@ class MetricsBox:
             surf.blit(v, (box.x+self.w-v.get_width()-14, y))
 
 
-# ── Legend (horizontal) ──────────────────────
 def draw_legend(surf, x, y, w, h, font):
     items = [(CELL_START,"Start"),(CELL_GOAL,"Goal"),(CELL_WALL,"Wall"),
-             (CELL_FRONT,"Frontier"),(CELL_VISIT,"Visited"),(CELL_PATH,"Path")]
+             (CELL_FRONT,"Frontier"),(CELL_VISIT,"Visited"),(CELL_PATH,"Path"),(CELL_AGENT,"Agent")]
     rrect(surf, PANEL_DARK, pygame.Rect(x,y,w,h), r=6, bw=1, bc=BORDER)
     iw, sq = w//len(items), h-14
     for i, (col, lbl) in enumerate(items):
@@ -312,7 +299,6 @@ def draw_legend(surf, x, y, w, h, font):
         surf.blit(t, t.get_rect(midleft=(ix-sq//2+sq+4, iy)))
 
 
-# ── Context Menu ─────────────────────────────
 class ContextMenu:
     IH, W, PAD = 30, 160, 8
 
@@ -386,6 +372,19 @@ class PathfinderApp:
         self.context_menu = ContextMenu()
         self.scroll_y     = 0
         self.panel_surf   = pygame.Surface((PANEL_W, 1100))
+
+        # ── Search state ──────────────────────────────
+        self.searcher    = None
+        self.search_gen  = None
+        self.searching   = False
+        self.start_time  = 0.0
+        self.frame_count = 0
+
+        # ── Agent movement state ──────────────────────
+        self.agent_pos     = None   # current cell agent is on
+        self.agent_path    = []     # remaining path ahead of agent
+        self.agent_moving  = False  # True when agent is walking path
+
         self._build_ui()
 
     def _recompute_layout(self):
@@ -414,6 +413,7 @@ class PathfinderApp:
         cy += ih+g2
         self.btn_apply = Button(px, cy, pw, bh, "⊞  Apply Grid Size", A_TEAL, font=self.font)
         cy += bh+g1; cy += lh
+
         self.sl_density = Slider(px, cy, pw, "Density %", 5, 65, 30, A_PURPLE, self.font)
         cy += 28+g1
 
@@ -437,11 +437,163 @@ class PathfinderApp:
         self.all_dropdowns = [self.dd_algo, self.dd_heur]
         self.all_inputs    = [self.in_rows, self.in_cols]
 
+    # ── Search wiring ─────────────────────────────────
+    def _start_search(self, start=None, replan=False):
+        """Instantiate the selected algorithm and kick off the generator."""
+        from Astar import AStarSearch
+        from Gbfs  import GBFSearch
+
+        # Clear previous visual state unless replanning (keep walls)
+        if not replan:
+            self.grid.clear_path()
+
+        heuristic = "manhattan" if "Manhattan" in self.dd_heur.value else "euclidean"
+        s = start if start else self.grid.start
+
+        if "A*" in self.dd_algo.value:
+            self.searcher = AStarSearch(self.grid, s, self.grid.goal, heuristic)
+        else:
+            self.searcher = GBFSearch(self.grid, s, self.grid.goal, heuristic)
+
+        self.search_gen  = self.searcher.step()
+        self.searching   = True
+        self.start_time  = pygame.time.get_ticks()
+        self.btn_pause.active = False
+        self.metrics.status        = "RUNNING"
+        self.metrics.nodes_visited = 0
+        self.metrics.path_cost     = 0
+        self.metrics.exec_time_ms  = 0.0
+        # Reset agent movement
+        self.agent_pos    = None
+        self.agent_path   = []
+        self.agent_moving = False
+
+    def _search_step(self):
+        """
+        Called once per frame from the main loop.
+        Advances the generator by sl_speed.val steps and updates the grid.
+        """
+        if not self.searching or self.btn_pause.active:
+            return
+        if self.search_gen is None:
+            return
+
+        # Throttle: advance 1 step every 2 frames for visible animation
+        if self.frame_count % 2 != 0:
+            return
+        for _ in range(1):
+            try:
+                result = next(self.search_gen)
+            except StopIteration:
+                self.searching = False
+                return
+
+            # Update cell colours for frontier and visited
+            # Frontier painted first (amber), visited overrides it (blue)
+            for cell in result["frontier"]:
+                r, c = cell
+                if self.grid.cells[r][c] not in (Grid.START, Grid.GOAL, Grid.WALL, Grid.VISIT):
+                    self.grid.cells[r][c] = Grid.FRONT
+
+            for cell in result["visited"]:
+                r, c = cell
+                if self.grid.cells[r][c] not in (Grid.START, Grid.GOAL, Grid.WALL):
+                    self.grid.cells[r][c] = Grid.VISIT
+
+            # Update metrics
+            self.metrics.nodes_visited = self.searcher.nodes_visited
+            elapsed = pygame.time.get_ticks() - self.start_time
+            self.metrics.exec_time_ms  = float(elapsed)
+
+            if result["type"] == "found":
+                # Draw final path
+                for cell in result["path"]:
+                    r, c = cell
+                    if self.grid.cells[r][c] not in (Grid.START, Grid.GOAL):
+                        self.grid.cells[r][c] = Grid.PATH
+                self.metrics.path_cost    = len(result["path"]) - 1
+                self.metrics.exec_time_ms = float(pygame.time.get_ticks() - self.start_time)
+                self.metrics.status       = "FOUND"
+                self.searching    = False
+                # Kick off agent movement along the found path
+                self.agent_path   = list(result["path"])[1:]  # skip start node
+                self.agent_pos    = self.grid.start
+                self.agent_moving = True
+                return
+
+            elif result["type"] == "no_path":
+                self.metrics.status = "NO PATH"
+                self.searching = False
+                return
+
+    # ── Dynamic mode obstacle spawning ───────────────
+    def _agent_step(self):
+        """
+        Move the agent one cell forward along agent_path.
+        Uses the same 2-frame throttle as the search animation.
+        """
+        if not self.agent_moving or self.btn_pause.active:
+            return
+        if not self.agent_path:
+            return
+
+        self.frame_count += 1
+        if self.frame_count % 2 != 0:
+            return
+
+        # Leave green trail behind the agent
+        if self.agent_pos and self.agent_pos not in (self.grid.start, self.grid.goal):
+            self.grid.cells[self.agent_pos[0]][self.agent_pos[1]] = Grid.PATH
+
+        # Advance to next cell
+        self.agent_path.pop(0)
+
+        if not self.agent_path:
+            # Reached the goal
+            self.agent_pos    = self.grid.goal
+            self.agent_moving = False
+            self.metrics.status = "FOUND"
+            return
+
+        self.agent_pos = self.agent_path[0]
+        r, c = self.agent_pos
+
+        # Mark agent position visually (don't overwrite start/goal)
+        if self.agent_pos not in (self.grid.start, self.grid.goal):
+            self.grid.cells[r][c] = Grid.AGENT
+
+    def _dynamic_step(self):
+        """
+        Spawns walls only while search is actively running.
+        Stops as soon as path is found or no path exists.
+        """
+        if not self.btn_dynamic.active:
+            return
+        # Only spawn while search is actively running
+        if not self.searching:
+            return
+
+        # ~2% chance per frame to spawn a new obstacle
+        if random.random() > 0.02:
+            return
+
+        r = random.randint(0, self.grid.rows-1)
+        c = random.randint(0, self.grid.cols-1)
+        cell = (r, c)
+
+        # Only spawn on empty/visited/frontier cells
+        if self.grid.cells[r][c] in (Grid.EMPTY, Grid.VISIT, Grid.FRONT):
+            self.grid.cells[r][c] = Grid.WALL
+
+            if self.searcher and self.searcher.notify_wall_added(cell):
+                self._start_search(start=self.grid.start, replan=True)
+
     def _draw_grid(self):
         surf = self.screen
         g, cs, ox, oy = self.grid, self.cell_size, self.grid_off_x, self.grid_off_y
         CMAP = {Grid.EMPTY:CELL_EMPTY, Grid.WALL:CELL_WALL, Grid.START:CELL_START,
-                Grid.GOAL:CELL_GOAL, Grid.FRONT:CELL_FRONT, Grid.VISIT:CELL_VISIT, Grid.PATH:CELL_PATH}
+                Grid.GOAL:CELL_GOAL, Grid.FRONT:CELL_FRONT, Grid.VISIT:CELL_VISIT,
+                Grid.PATH:CELL_PATH, Grid.AGENT:CELL_AGENT}
         pygame.draw.rect(surf, BG, (0, 0, GRID_AREA_W, GRID_AREA_H))
         for r in range(g.rows):
             for c in range(g.cols):
@@ -474,7 +626,12 @@ class PathfinderApp:
         self.btn_dynamic.label = "⚡  Dynamic Mode: ON" if self.btn_dynamic.active else "⚡  Dynamic Mode: OFF"
         for w in self.all_buttons+self.all_sliders+self.all_inputs: w.draw(ps)
         self.metrics.draw(ps)
-        for dd in self.all_dropdowns: dd.draw(ps)
+        # Draw only the closed (header) part of each dropdown on panel_surf
+        for dd in self.all_dropdowns:
+            was_open = dd.open
+            dd.open = False
+            dd.draw(ps)
+            dd.open = was_open
 
         self.scroll_y = max(0, min(self.scroll_y, max(0, self.panel_content_h-SCREEN_H)))
         pygame.draw.rect(surf, BG, (GRID_AREA_W, 0, pw, SCREEN_H))
@@ -543,16 +700,58 @@ class PathfinderApp:
             self.grid_rows, self.grid_cols = self.in_rows.val, self.in_cols.val
             self._recompute_layout()
             self.grid = Grid(self.grid_rows, self.grid_cols)
+            self.searching  = False
+            self.searcher   = None
+            self.search_gen = None
             self.metrics.nodes_visited = self.metrics.path_cost = 0
             self.metrics.exec_time_ms  = 0; self.metrics.status = "IDLE"
+
         elif btn is self.btn_generate:
-            self.grid.generate_random(self.sl_density.val/100); self.metrics.status = "IDLE"
+            self.grid.generate_random(self.sl_density.val/100)
+            self.searching = False; self.searcher = None; self.search_gen = None; self.agent_moving = False; self.agent_pos = None; self.agent_path = []
+            self.metrics.status = "IDLE"
+
         elif btn is self.btn_clear:
             self.grid = Grid(self.grid_rows, self.grid_cols)
+            self.searching = False; self.searcher = None; self.search_gen = None; self.agent_moving = False; self.agent_pos = None; self.agent_path = []
             self.metrics.nodes_visited = self.metrics.path_cost = 0
             self.metrics.exec_time_ms  = 0; self.metrics.status = "IDLE"
-        elif btn is self.btn_start:  self.metrics.status = "RUNNING"
-        elif btn is self.btn_reset:  self.grid.clear_path(); self.metrics.status = "IDLE"
+
+        elif btn is self.btn_start:
+            self._start_search()
+
+        elif btn is self.btn_reset:
+            self.grid.clear_path()
+            self.searching = False; self.searcher = None; self.search_gen = None; self.agent_moving = False; self.agent_pos = None; self.agent_path = []
+            self.metrics.nodes_visited = self.metrics.path_cost = 0
+            self.metrics.exec_time_ms  = 0; self.metrics.status = "IDLE"
+            self.btn_pause.active = False
+
+    def _draw_open_dropdowns(self):
+        """
+        Draw the open dropdown item lists directly on self.screen so they
+        always appear on top of every other widget (fixes z-order bug).
+        Coordinates are shifted by GRID_AREA_W and adjusted for scroll.
+        """
+        for dd in self.all_dropdowns:
+            if not dd.open:
+                continue
+            # Temporarily shift the dropdown rect into screen space
+            ox = GRID_AREA_W
+            oy = -self.scroll_y
+            for i, opt in enumerate(dd.options):
+                ir = pygame.Rect(
+                    dd.rect.x + ox,
+                    dd.rect.bottom + i * dd.rect.h + oy,
+                    dd.rect.w,
+                    dd.rect.h
+                )
+                bg = (40, 50, 75) if i == dd.hovered else (30, 36, 56)
+                rrect(self.screen, bg, ir, r=4, bw=1,
+                      bc=dd.color if i == dd.selected else dd.color)
+                if dd.font:
+                    t = dd.font.render(opt, True, dd.color if i == dd.selected else WHITE)
+                    self.screen.blit(t, t.get_rect(midleft=(ir.x + 12, ir.centery)))
 
     def run(self):
         scan = pygame.Surface((SCREEN_W, SCREEN_H), pygame.SRCALPHA)
@@ -560,10 +759,16 @@ class PathfinderApp:
             pygame.draw.line(scan, (0,0,0,18), (0,y), (SCREEN_W,y))
         while True:
             self._handle_events()
+            self.frame_count += 1        # single increment drives all throttles
+            self._search_step()
+            self._agent_step()
+            self._dynamic_step()
             self.screen.fill(BG)
             self._draw_grid()
             self._draw_panel()
             self.screen.blit(scan, (0,0))
+            # Draw open dropdown lists directly on screen (fixes z-order)
+            self._draw_open_dropdowns()
             self.context_menu.draw(self.screen, self.font)
             self.screen.blit(self.font.render("Dynamic Pathfinding Agent", True, DIM), (8, SCREEN_H-18))
             pygame.display.flip()
